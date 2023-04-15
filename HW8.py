@@ -73,16 +73,49 @@ def find_rest_in_building(building_num, db):
 #EXTRA CREDIT
 def get_highest_rating(db): #Do this through DB as well
     """
-    This function return a list of two tuples. The first tuple contains the highest-rated restaurant category 
-    and the average rating of the restaurants in that category, and the second tuple contains the building number 
+    This function return a list of two tuples. The first tuple contains the highest-rated restaurant category
+    and the average rating of the restaurants in that category, and the second tuple contains the building number
     which has the highest rating of restaurants and its average rating.
 
-    This function should also plot two barcharts in one figure. The first bar chart displays the categories 
+    This function should also plot two barcharts in one figure. The first bar chart displays the categories
     along the y-axis and their ratings along the x-axis in descending order (by rating).
-    The second bar chart displays the buildings along the y-axis and their ratings along the x-axis 
+    The second bar chart displays the buildings along the y-axis and their ratings along the x-axis
     in descending order (by rating).
     """
-    pass
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db)
+    cur = conn.cursor()
+    cat_dict = {}
+    cur.execute("SELECT category, AVG(rating) FROM restaurants JOIN categories ON category_id = categories.id GROUP BY category ORDER BY AVG(rating) ASC")
+    for row in cur:
+        cat_dict[row[0]] = row[1]
+    plt.figure(figsize=(10,10)).tight_layout()
+    plt.subplot(2,1,1)
+    plt.barh(list(cat_dict.keys()), list(cat_dict.values()))
+    plt.xlabel("Average Rating")
+    plt.ylabel("Restaurant Categories")
+    plt.title('Average Ratings by Category')
+    plt.xlim([0, 5])
+
+    build_dict = {}
+    cur.execute("SELECT building, AVG(rating) FROM restaurants JOIN buildings ON building_id = buildings.id GROUP BY building ORDER BY AVG(rating) ASC")
+    for row in cur:
+        build_dict[row[0]] = row[1]
+    plt.subplot(2,1,2)
+    plt.barh(list(map(str, build_dict.keys())), list(build_dict.values()))
+    plt.xlabel("Average Rating")
+    plt.ylabel("Building Numbers")
+    plt.title('Average Ratings by Building Number')
+    plt.xlim([0, 5])
+
+    plt.tight_layout()
+    plt.savefig("EC.png")
+    plt.show()
+
+    top_cat = sorted(cat_dict.items(), key=lambda x:x[1])[-1]
+    top_build = sorted(build_dict.items(), key=lambda x:x[1])[-1]
+
+    return [top_cat, top_build]
 
 #Try calling your functions here
 def main():
