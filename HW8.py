@@ -38,7 +38,22 @@ def plot_rest_categories(db):
     restaurant categories and the values should be the number of restaurants in each category. The function should
     also create a bar chart with restaurant categories and the count of number of restaurants in each category.
     """
-    pass
+    path = os.path.dirname(os.path.abspath(__file__))
+    conn = sqlite3.connect(path+'/'+db)
+    cur = conn.cursor()
+    cat_dict = {}
+    cur.execute("SELECT category, COUNT(name) FROM restaurants JOIN categories ON category_id = categories.id GROUP BY category ORDER BY COUNT(name) ASC")
+    for row in cur:
+        cat_dict[row[0]] = row[1]
+    plt.figure(figsize=(8,8))
+    plt.barh(list(cat_dict.keys()), list(cat_dict.values()))
+    plt.xlabel("Number of Restaurants")
+    plt.ylabel("Restaurant Categories")
+    plt.title('Types of Restaurants on South U Ave')
+    plt.tight_layout()
+    plt.savefig("Task2.png")
+    plt.show()
+    return cat_dict
 
 def find_rest_in_building(building_num, db):
     '''
